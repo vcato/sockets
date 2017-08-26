@@ -18,10 +18,19 @@ class Socket {
     void connectTo(const std::string &hostname,int port);
     void close();
     ssize_t recv(void *buffer,size_t n_bytes) const;
+    static void initialize();
 
   private:
-    static const int invalid_file_descriptor = -1;
-    int file_descriptor;
+#ifdef _WIN32
+    using SocketHandle = SOCKET;
+    static const SocketHandle invalid_socket_handle = INVALID_SOCKET;
+    static const int socket_error = SOCKET_ERROR;
+#else
+    using SocketHandle = int;
+    static const SocketHandle invalid_socket_handle = -1;
+    static const int socket_error = -1;
+#endif
+    SocketHandle socket_handle;
 
     void create();
     void connectTo(const InternetAddress &server_address);

@@ -31,6 +31,7 @@ void Server::acceptConnection()
   data_socket.acceptFrom(listen_socket);
 }
 
+
 void Server::waitForConnection()
 {
   acceptConnection();

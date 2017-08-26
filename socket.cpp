@@ -1,46 +1,50 @@
 #include "socket.hpp"
 
+#ifdef WIN32
+#include <winsock2.h>
+#else
+#include <unistd.h>
+#endif
 #include <stdexcept>
 #include <cassert>
-#include <unistd.h>
 
 
 Socket::Socket()
-  : file_descriptor(invalid_file_descriptor)
+  : socket_handle(invalid_socket_handle)
 {
 }
 
 
 Socket::Socket(Socket&& arg)
-: file_descriptor(arg.file_descriptor)
+: socket_handle(arg.socket_handle)
 {
-  std::swap(file_descriptor,arg.file_descriptor);
+  std::swap(socket_handle,arg.socket_handle);
 }
 
 
 Socket::~Socket()
 {
-  assert(file_descriptor==invalid_file_descriptor);
+  assert(socket_handle==invalid_socket_handle);
 }
 
 
 Socket& Socket::operator=(Socket&& arg)
 {
-  assert(file_descriptor==invalid_file_descriptor);
-  std::swap(file_descriptor,arg.file_descriptor);
+  assert(socket_handle==invalid_socket_handle);
+  std::swap(socket_handle,arg.socket_handle);
   return *this;
 }
 
 
 void Socket::bind(const Socket &socket,const InternetAddress &address)
 {
-  int sockfd = socket.file_descriptor;
+  SocketHandle sockfd = socket.socket_handle;
   const sockaddr *addr = address.sockaddrPtr();
   socklen_t addrlen = address.sockaddrSize();
 
   int bind_result = ::bind(sockfd,addr,addrlen);
 
-  if (bind_result!=0) {
+  if (bind_result==socket_error) {
     throw std::runtime_error("Unable to bind socket.");
   }
 }
@@ -50,18 +54,18 @@ Socket Socket::accept(const Socket &listen_socket)
 {
   Socket data_socket;
   InternetAddress client_address;
-  int sockfd = listen_socket.file_descriptor;
+  SocketHandle sockfd = listen_socket.socket_handle;
   sockaddr *addr = client_address.sockaddrPtr();
   socklen_t addrlen = client_address.sockaddrSize();
 
-  int new_file_descriptor = ::accept(sockfd,addr,&addrlen);
+  SocketHandle new_file_descriptor = ::accept(sockfd,addr,&addrlen);
 
-  if (new_file_descriptor==-1) {
+  if (new_file_descriptor==invalid_socket_handle) {
     throw std::runtime_error("Failed to accept connection.");
   }
 
-  assert(data_socket.file_descriptor==invalid_file_descriptor);
-  data_socket.file_descriptor = new_file_descriptor;
+  assert(data_socket.socket_handle==invalid_socket_handle);
+  data_socket.socket_handle = new_file_descriptor;
   return data_socket;
 }
 
@@ -72,13 +76,12 @@ void
     const InternetAddress &server_address
   )
 {
-  int sockfd = data_socket.file_descriptor;
+  SocketHandle sockfd = data_socket.socket_handle;
   const sockaddr *addr = server_address.sockaddrPtr();
   socklen_t addrlen = server_address.sockaddrSize();
-
   int connect_result = ::connect(sockfd,addr,addrlen);
 
-  if (connect_result<0) {
+  if (connect_result==socket_error) {
     throw std::runtime_error("Unable to connect to server.");
   }
 }
@@ -96,9 +99,9 @@ void Socket::bindTo(int port)
 
 void Socket::startListening(int backlog)
 {
-  int listen_result = ::listen(file_descriptor,backlog);
+  int listen_result = ::listen(socket_handle,backlog);
 
-  if (listen_result!=0) {
+  if (listen_result==socket_error) {
     throw std::runtime_error("Unable to listen.");
   }
 }
@@ -115,14 +118,14 @@ void Socket::create()
   int domain = AF_INET;
   int type = SOCK_STREAM;
   int protocol = 0;
-  int new_file_descriptor = socket(domain,type,protocol);
+  SocketHandle new_file_descriptor = socket(domain,type,protocol);
 
-  if (new_file_descriptor==-1) {
+  if (new_file_descriptor==invalid_socket_handle) {
     throw std::runtime_error("Failed to create socket.");
   }
 
-  assert(file_descriptor==invalid_file_descriptor);
-  file_descriptor = new_file_descriptor;
+  assert(socket_handle==invalid_socket_handle);
+  socket_handle = new_file_descriptor;
 }
 
 
@@ -146,14 +149,32 @@ void Socket::connectTo(const std::string &hostname,int port)
 
 void Socket::close()
 {
-  ::close(file_descriptor);
-  file_descriptor = invalid_file_descriptor;
+#ifdef _WIN32
+  closesocket(socket_handle);
+#else
+  ::close(socket_handle);
+#endif
+  socket_handle = invalid_socket_handle;
 }
 
 
 ssize_t Socket::recv(void *buffer,size_t n_bytes) const
 {
-  assert(file_descriptor!=invalid_file_descriptor);
-  ssize_t n_read = ::read(file_descriptor,buffer,n_bytes);
+  assert(socket_handle!=invalid_socket_handle);
+  int flags = 0;
+  ssize_t n_read =
+    ::recv(socket_handle,static_cast<char*>(buffer),n_bytes,flags);
   return n_read;
+}
+
+
+void Socket::initialize()
+{
+#ifdef _WIN32
+  static WSADATA wsa;
+
+  if (WSAStartup(MAKEWORD(2,2),&wsa)!=0) {
+    throw std::runtime_error("Unable to initialize winsock.");
+  }
+#endif
 }

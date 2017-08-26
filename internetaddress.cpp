@@ -1,6 +1,9 @@
 #include "internetaddress.hpp"
 
+#ifdef _WIN32
+#else
 #include <netdb.h>
+#endif
 #include <sstream>
 #include <cstring>
 
