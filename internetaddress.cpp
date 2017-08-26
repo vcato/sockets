@@ -23,7 +23,8 @@ InternetAddress::~InternetAddress()
 
 void InternetAddress::setPort(int port)
 {
-  address.sin_port = htons(port);
+  uint16_t port_in_network_byte_order = htons(port);
+  address.sin_port = port_in_network_byte_order;
 }
 
 

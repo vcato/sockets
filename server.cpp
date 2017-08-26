@@ -15,8 +15,10 @@ Server::~Server()
 
 void Server::startListening(int port)
 {
+  int backlog = 1;
+
   listen_socket.bindTo(port);
-  listen_socket.startListening(/*backlog*/1);
+  listen_socket.startListening(backlog);
 }
 
 
