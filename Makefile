@@ -1,5 +1,6 @@
 CXXFLAGS=-W -Wall -pedantic -std=c++14 -MD -MP
 
+# To build with mingw for Windows
 #CXX=i686-w64-mingw32-c++-win32
 #LIBS=-lws2_32
 
