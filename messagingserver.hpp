@@ -3,7 +3,7 @@
 #include "messagebuilder.hpp"
 
 
-struct MessagingServer {
+class MessagingServer {
   public:
     using ClientHandle = ObjectSetHandle;
     using Message = std::string;
