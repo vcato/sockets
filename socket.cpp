@@ -22,6 +22,12 @@ Socket::Socket(Socket&& arg)
 }
 
 
+Socket::Socket(SocketHandle socket_handle_arg)
+: socket_handle(socket_handle_arg)
+{
+}
+
+
 Socket::~Socket()
 {
   assert(socket_handle==invalid_socket_handle);
@@ -52,21 +58,17 @@ void Socket::bind(const Socket &socket,const InternetAddress &address)
 
 Socket Socket::accept(const Socket &listen_socket)
 {
-  Socket data_socket;
   InternetAddress client_address;
   SocketHandle sockfd = listen_socket.socket_handle;
   sockaddr *addr = client_address.sockaddrPtr();
   socklen_t addrlen = client_address.sockaddrSize();
-
   SocketHandle new_file_descriptor = ::accept(sockfd,addr,&addrlen);
 
   if (new_file_descriptor==invalid_socket_handle) {
     throw std::runtime_error("Failed to accept connection.");
   }
 
-  assert(data_socket.socket_handle==invalid_socket_handle);
-  data_socket.socket_handle = new_file_descriptor;
-  return data_socket;
+  return Socket(new_file_descriptor);
 }
 
 

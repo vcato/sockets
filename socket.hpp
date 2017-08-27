@@ -32,6 +32,7 @@ class Socket {
 #endif
     SocketHandle socket_handle;
 
+    Socket(SocketHandle);
     void create();
     void connectTo(const InternetAddress &server_address);
     static void bind(const Socket &,const InternetAddress &);
