@@ -4,6 +4,8 @@
 #include <winsock2.h>
 #else
 #include <unistd.h>
+#include <sys/select.h>
+#include <sys/types.h>
 #endif
 #include <stdexcept>
 #include <cassert>
@@ -15,7 +17,7 @@ Socket::Socket()
 }
 
 
-Socket::Socket(Socket&& arg)
+Socket::Socket(Socket&& arg) noexcept
 : socket_handle(arg.socket_handle)
 {
   std::swap(socket_handle,arg.socket_handle);
@@ -162,11 +164,24 @@ void Socket::close()
 
 ssize_t Socket::recv(void *buffer,size_t n_bytes) const
 {
-  assert(socket_handle!=invalid_socket_handle);
+  assert(isValid());
+
   int flags = 0;
   ssize_t n_read =
     ::recv(socket_handle,static_cast<char*>(buffer),n_bytes,flags);
   return n_read;
+}
+
+
+ssize_t Socket::send(const void *buffer,size_t n_bytes) const
+{
+  assert(isValid());
+
+  int flags = 0;
+  ssize_t n_written =
+    ::send(socket_handle,static_cast<const char*>(buffer),n_bytes,flags);
+
+  return n_written;
 }
 
 
@@ -179,4 +194,31 @@ void Socket::initialize()
     throw std::runtime_error("Unable to initialize winsock.");
   }
 #endif
+}
+
+
+bool Socket::hasDataAvailableForReading() const
+{
+  assert(socket_handle!=invalid_socket_handle);
+
+  fd_set read_set;
+  FD_ZERO(&read_set);
+  FD_SET(socket_handle,&read_set);
+  int nfds = socket_handle+1;
+  timeval timeout;
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 0;
+  select(nfds,&read_set,/*writefds*/0,/*exceptfds*/0,&timeout);
+
+  if (FD_ISSET(socket_handle,&read_set)) {
+    return true;
+  }
+
+  return false;
+}
+
+
+bool Socket::isValid() const
+{
+  return socket_handle!=invalid_socket_handle;
 }

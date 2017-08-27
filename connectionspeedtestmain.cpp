@@ -1,6 +1,5 @@
 #include <iostream>
 #include "server.hpp"
-#include "client.hpp"
 
 using std::cerr;
 
@@ -26,11 +25,11 @@ static void runServer()
 
 static void runClient()
 {
-  Client client;
+  Socket socket;
 
   for (int i=0; i!=n_iterations; ++i) {
-    client.connectTo("localhost",port);
-    client.closeConnection();
+    socket.connectTo("localhost",port);
+    socket.close();
     cerr << ".";
   }
 

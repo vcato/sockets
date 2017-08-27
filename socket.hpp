@@ -7,17 +7,20 @@
 class Socket {
   public:
     Socket();
-    Socket(Socket&& arg);
+    Socket(Socket&& arg) noexcept;
     ~Socket();
 
     Socket& operator=(Socket&& arg);
 
+    bool isValid() const;
+    bool hasDataAvailableForReading() const;
     void bindTo(int port);
     void startListening(int backlog);
     void acceptFrom(const Socket &listen_socket);
     void connectTo(const std::string &hostname,int port);
     void close();
     ssize_t recv(void *buffer,size_t n_bytes) const;
+    ssize_t send(const void *buffer,size_t n_bytes) const;
     static void initialize();
 
   private:

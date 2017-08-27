@@ -1,4 +1,8 @@
 *.o
 *.d
+*.pass
 
 connection_speed_test
+messagebuilder_test
+messaging_test
+objectset_test
