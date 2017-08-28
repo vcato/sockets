@@ -1,14 +1,8 @@
 #include <iostream>
-#include <functional>
 #include <thread>
 #include <sstream>
-#include <vector>
-#include "socket.hpp"
-#include "messagebuilder.hpp"
-#include "objectset.hpp"
 #include "messagingserver.hpp"
 #include "messagingclient.hpp"
-#include "feedmessagebuilder.hpp"
 #ifndef _WIN32
 #include <signal.h>
 #endif
@@ -45,13 +39,8 @@ static void runServer()
       }
     };
 
-  for (;;) {
+  while (server.clientCount()!=0 || !quit_message_was_received) {
     server.checkForMessages(message_handler);
-    if (server.clientCount()==0) {
-      if (quit_message_was_received) {
-        break;
-      }
-    }
   }
 }
 

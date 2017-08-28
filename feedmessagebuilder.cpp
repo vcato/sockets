@@ -11,6 +11,7 @@ void
   while (data_socket.hasDataAvailableForReading()) {
     char chunk[1024];
     ssize_t n_bytes_read = data_socket.recv(chunk,sizeof chunk);
+
     if (n_bytes_read>0) {
       message_builder.addChunk(chunk,n_bytes_read,message_handler);
     }

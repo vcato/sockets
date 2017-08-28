@@ -29,15 +29,18 @@ void MessagingServer::checkForMessages(const MessageHandler& message_handler)
     client.data_socket.acceptFrom(listen_socket);
   }
 
-  clients.forEachHandle([&](ClientHandle client_handle){
-    Client &client = clients[client_handle];
-    client.checkForMessages(message_handler,client_handle);
+  auto check_for_messages =
+    [&](ClientHandle client_handle) {
+      Client &client = clients[client_handle];
+      client.checkForMessages(message_handler,client_handle);
 
-    if (!client.data_socket.isValid()) {
-      // Client closed the connection
-      clients.deallocate(client_handle);
-    }
-  });
+      if (!client.data_socket.isValid()) {
+        // Client closed the connection
+        clients.deallocate(client_handle);
+      }
+    };
+
+  clients.forEachHandle(check_for_messages);
 }
 
 
