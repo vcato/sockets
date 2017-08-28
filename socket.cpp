@@ -147,34 +147,32 @@ void Socket::connectTo(const std::string &hostname,int port)
 
 void Socket::close()
 {
+  assert(socket_handle!=invalid_socket_handle);
+
 #ifdef _WIN32
   closesocket(socket_handle);
 #else
   ::close(socket_handle);
 #endif
+
   socket_handle = invalid_socket_handle;
 }
 
 
-ssize_t Socket::recv(void *buffer,size_t n_bytes) const
+ssize_t Socket::recv(char *buffer,size_t n_bytes) const
 {
   assert(isValid());
-
   int flags = 0;
-  ssize_t n_read =
-    ::recv(socket_handle,static_cast<char*>(buffer),n_bytes,flags);
+  ssize_t n_read = ::recv(socket_handle,buffer,n_bytes,flags);
   return n_read;
 }
 
 
-ssize_t Socket::send(const void *buffer,size_t n_bytes) const
+ssize_t Socket::send(const char *buffer,size_t n_bytes) const
 {
   assert(isValid());
-
   int flags = 0;
-  ssize_t n_written =
-    ::send(socket_handle,static_cast<const char*>(buffer),n_bytes,flags);
-
+  ssize_t n_written = ::send(socket_handle,buffer,n_bytes,flags);
   return n_written;
 }
 

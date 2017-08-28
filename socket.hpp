@@ -19,8 +19,8 @@ class Socket {
     void acceptFrom(const Socket &listen_socket);
     void connectTo(const std::string &hostname,int port);
     void close();
-    ssize_t recv(void *buffer,size_t n_bytes) const;
-    ssize_t send(const void *buffer,size_t n_bytes) const;
+    ssize_t recv(char *buffer,size_t n_bytes) const;
+    ssize_t send(const char *buffer,size_t n_bytes) const;
     static void initialize();
 
   private:
