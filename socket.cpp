@@ -133,12 +133,6 @@ void Socket::create()
 }
 
 
-void Socket::connectTo(const InternetAddress &server_address)
-{
-  connect(*this,server_address);
-}
-
-
 void Socket::connectTo(const std::string &hostname,int port)
 {
   InternetAddress server_address;
@@ -147,7 +141,7 @@ void Socket::connectTo(const std::string &hostname,int port)
   server_address.setPort(port);
 
   create();
-  connectTo(server_address);
+  connect(*this,server_address);
 }
 
 
