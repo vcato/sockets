@@ -25,6 +25,9 @@ class MessagingServer {
       void sendMessage(const Message &message);
     };
 
+    void checkForNewClients();
+    void checkForMessagesFromEachClient(const MessageHandler &);
+
     Socket listen_socket;
     ObjectSet<Client> clients;
 };

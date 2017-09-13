@@ -21,15 +21,22 @@ MessagingServer::~MessagingServer()
 }
 
 
-void MessagingServer::checkForMessages(const MessageHandler& message_handler)
+void MessagingServer::checkForNewClients()
 {
   if (listen_socket.hasDataAvailableForReading()) {
     ClientHandle client_handle = clients.allocate();
     Client &client = clients[client_handle];
     client.data_socket.acceptFrom(listen_socket);
   }
+}
 
-  auto check_for_messages =
+
+void
+  MessagingServer::checkForMessagesFromEachClient(
+    const MessageHandler &message_handler
+  )
+{
+  auto check_for_client_messages =
     [&](ClientHandle client_handle) {
       Client &client = clients[client_handle];
       client.checkForMessages(message_handler,client_handle);
@@ -40,7 +47,14 @@ void MessagingServer::checkForMessages(const MessageHandler& message_handler)
       }
     };
 
-  clients.forEachHandle(check_for_messages);
+  clients.forEachHandle(check_for_client_messages);
+}
+
+
+void MessagingServer::checkForMessages(const MessageHandler& message_handler)
+{
+  checkForNewClients();
+  checkForMessagesFromEachClient(message_handler);
 }
 
 
