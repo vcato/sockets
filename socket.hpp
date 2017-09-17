@@ -8,9 +8,11 @@ class Socket {
   public:
     Socket();
     Socket(Socket&& arg) noexcept;
+    Socket(const Socket&) = delete;
     ~Socket();
 
     Socket& operator=(Socket&& arg);
+    void operator=(const Socket& arg) = delete;
 
     bool isValid() const;
     bool hasDataAvailableForReading() const;

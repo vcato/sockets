@@ -116,6 +116,8 @@ int main(int argc,char **argv)
 {
   Socket::initialize();
 
+  Socket a,b;
+
   if (argc!=2) {
     cerr << "Usage: " << argv[0] << " (server|client)\n";
     return EXIT_FAILURE;
