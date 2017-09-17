@@ -21,7 +21,7 @@ objectset_test: objectset_test.o
 	$(LINK) -o $@ $^ $(LIBS)
 
 connection_speed_test: \
-  connectionspeedtestmain.o server.o socket.o internetaddress.o
+  connectionspeedtestmain.o socket.o internetaddress.o
 	$(LINK) -o $@ $^ $(LIBS)
 
 messaging_test: messagingtestmain.o \
