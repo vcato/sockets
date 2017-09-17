@@ -97,7 +97,13 @@ void Socket::bindTo(int port)
   server_address.setPort(port);
 
   create();
-  bind(*this,server_address);
+  try {
+    bind(*this,server_address);
+  }
+  catch (...) {
+    close();
+    throw;
+  }
 }
 
 
