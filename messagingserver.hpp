@@ -27,6 +27,7 @@ class MessagingServer {
 
     void checkForNewClients();
     void checkForMessagesFromEachClient(const MessageHandler &);
+    void removeDisconnectedClients();
 
     Socket listen_socket;
     ObjectSet<Client> clients;

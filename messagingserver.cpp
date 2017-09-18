@@ -40,6 +40,17 @@ void
     [&](ClientHandle client_handle) {
       Client &client = clients[client_handle];
       client.checkForMessages(message_handler,client_handle);
+    };
+
+  clients.forEachHandle(check_for_client_messages);
+}
+
+
+void MessagingServer::removeDisconnectedClients()
+{
+  auto check_for_client_disconnect =
+    [&](ClientHandle client_handle) {
+      Client &client = clients[client_handle];
 
       if (!client.data_socket.isValid()) {
         // Client closed the connection
@@ -47,7 +58,7 @@ void
       }
     };
 
-  clients.forEachHandle(check_for_client_messages);
+  clients.forEachHandle(check_for_client_disconnect);
 }
 
 
@@ -55,6 +66,7 @@ void MessagingServer::checkForMessages(const MessageHandler& message_handler)
 {
   checkForNewClients();
   checkForMessagesFromEachClient(message_handler);
+  removeDisconnectedClients();
 }
 
 
