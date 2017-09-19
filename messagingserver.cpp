@@ -21,9 +21,15 @@ MessagingServer::~MessagingServer()
 }
 
 
+bool MessagingServer::aClientIsTryingToConnect() const
+{
+  return listen_socket.hasDataAvailableForReading();
+}
+
+
 void MessagingServer::checkForNewClients()
 {
-  if (listen_socket.hasDataAvailableForReading()) {
+  if (aClientIsTryingToConnect()) {
     ClientHandle client_handle = clients.allocate();
     Client &client = clients[client_handle];
     client.data_socket.acceptFrom(listen_socket);
