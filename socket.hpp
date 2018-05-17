@@ -14,16 +14,22 @@ class Socket {
     Socket& operator=(Socket&& arg);
     void operator=(const Socket& arg) = delete;
 
+    static void initialize();
+
     bool isValid() const;
-    bool hasDataAvailableForReading() const;
     void bindTo(int port);
     void startListening(int backlog);
+
+    void setNoDelay(bool);
+
+    bool hasDataAvailableForReading() const;
+
     void acceptFrom(const Socket &listen_socket);
     void connectTo(const std::string &hostname,int port);
     void close();
+
     ssize_t recv(char *buffer,size_t n_bytes) const;
     ssize_t send(const char *buffer,size_t n_bytes) const;
-    static void initialize();
 
   private:
 #ifdef _WIN32

@@ -6,3 +6,4 @@ connection_speed_test
 messagebuilder_test
 messaging_test
 objectset_test
+nodelay_test

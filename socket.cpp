@@ -6,9 +6,14 @@
 #include <unistd.h>
 #include <sys/select.h>
 #include <sys/types.h>
+#include <netinet/tcp.h>
 #endif
 #include <stdexcept>
 #include <cassert>
+#include <iostream>
+
+
+using std::cerr;
 
 
 Socket::Socket()
@@ -219,4 +224,16 @@ bool Socket::hasDataAvailableForReading() const
 bool Socket::isValid() const
 {
   return socket_handle!=invalid_socket_handle;
+}
+
+
+void Socket::setNoDelay(bool is_enabled)
+{
+  int value = is_enabled;
+  int result =
+    setsockopt(socket_handle, SOL_TCP, TCP_NODELAY, &value, sizeof(value));
+
+  if (result!=0) {
+    throw std::runtime_error("Unable to set TCP_NODELAY");
+  }
 }
