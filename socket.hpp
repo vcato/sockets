@@ -35,7 +35,15 @@ class Socket {
     void close();
 
     ssize_t recv(char *buffer,size_t n_bytes) const;
+      // Returns -1 on error, 0 if the remote end closed, or a positive value
+      // indicating the number of bytes received.
+
     NonBlockingRecvResult nonBlockingRecv(char *buffer,size_t n_bytes) const;
+      // Returns would_block==true if the receive failed because the socket
+      // was non-blocking and no data was available.  Otherwise, sets
+      // n_bytes_received to -1 on error, 0 if the remote end closed, or
+      // a positive value indicating the number of bytes received.
+
     ssize_t send(const char *buffer,size_t n_bytes) const;
 
   private:
