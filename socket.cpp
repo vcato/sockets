@@ -222,7 +222,7 @@ void Socket::initialize()
 }
 
 
-bool Socket::hasDataAvailableForReading() const
+bool Socket::canRecvWithoutBlocking() const
 {
   assert(socket_handle!=invalid_socket_handle);
 

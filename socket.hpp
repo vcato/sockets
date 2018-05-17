@@ -28,7 +28,7 @@ class Socket {
     void setNoDelay(bool);
     void setNonBlocking(bool non_blocking);
 
-    bool hasDataAvailableForReading() const;
+    bool canRecvWithoutBlocking() const;
 
     void acceptFrom(const Socket &listen_socket);
     void connectTo(const std::string &hostname,int port);

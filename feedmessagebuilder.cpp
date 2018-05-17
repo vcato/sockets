@@ -8,7 +8,7 @@ void
     const std::function<void(const std::string&)> &message_handler
   )
 {
-  while (data_socket.hasDataAvailableForReading()) {
+  while (data_socket.canRecvWithoutBlocking()) {
     char chunk[1024];
     ssize_t n_bytes_read = data_socket.recv(chunk,sizeof chunk);
 

@@ -23,7 +23,7 @@ MessagingServer::~MessagingServer()
 
 bool MessagingServer::aClientIsTryingToConnect() const
 {
-  return listen_socket.hasDataAvailableForReading();
+  return listen_socket.canRecvWithoutBlocking();
 }
 
 
