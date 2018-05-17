@@ -7,3 +7,4 @@ messagebuilder_test
 messaging_test
 objectset_test
 nodelay_test
+nonblocking_test

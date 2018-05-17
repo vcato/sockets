@@ -4,6 +4,7 @@
 #include <winsock2.h>
 #else
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/select.h>
 #include <sys/types.h>
 #include <netinet/tcp.h>
@@ -179,6 +180,27 @@ ssize_t Socket::recv(char *buffer,size_t n_bytes) const
 }
 
 
+auto
+  Socket::nonBlockingRecv(char *buffer,size_t n_bytes) const
+  -> NonBlockingRecvResult
+{
+  assert(isValid());
+  int flags = 0;
+  ssize_t n_read = ::recv(socket_handle,buffer,n_bytes,flags);
+
+  if (n_read<0) {
+    if (errno==EAGAIN) {
+      return NonBlockingRecvResult{/*would_block*/true,n_read};
+    }
+    else {
+      return NonBlockingRecvResult{/*would_block*/false,n_read};
+    }
+  }
+
+  return NonBlockingRecvResult{/*would_block*/false,n_read};
+}
+
+
 ssize_t Socket::send(const char *buffer,size_t n_bytes) const
 {
   assert(isValid());
@@ -229,11 +251,43 @@ bool Socket::isValid() const
 
 void Socket::setNoDelay(bool is_enabled)
 {
+  assert(isValid());
+
   int value = is_enabled;
   int result =
     setsockopt(socket_handle, SOL_TCP, TCP_NODELAY, &value, sizeof(value));
 
   if (result!=0) {
     throw std::runtime_error("Unable to set TCP_NODELAY");
+  }
+}
+
+
+void Socket::setNonBlocking(bool non_blocking)
+{
+  assert(isValid());
+
+#ifdef _WIN32
+  unsigned long value = non_blocking ? 1 : 0;
+  int result = ioctlsocket(socket_handle, FIONBIO, &value);
+#else
+  int flags = fcntl(socket_handle, F_GETFL, 0);
+
+  if (flags == -1) {
+    throw std::runtime_error("Unable to set non-blocking");
+  }
+
+  if (non_blocking) {
+    flags |= O_NONBLOCK;
+  }
+  else {
+    flags &= ~O_NONBLOCK;
+  }
+
+  int result = fcntl(socket_handle, F_SETFL, flags);
+#endif
+
+  if (result!=0) {
+    throw std::runtime_error("Unable to set non-blocking");
   }
 }

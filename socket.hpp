@@ -11,6 +11,11 @@ class Socket {
     Socket(const Socket&) = delete;
     ~Socket();
 
+    struct NonBlockingRecvResult {
+      bool would_block;
+      ssize_t n_bytes_received;
+    };
+
     Socket& operator=(Socket&& arg);
     void operator=(const Socket& arg) = delete;
 
@@ -21,6 +26,7 @@ class Socket {
     void startListening(int backlog);
 
     void setNoDelay(bool);
+    void setNonBlocking(bool non_blocking);
 
     bool hasDataAvailableForReading() const;
 
@@ -29,6 +35,7 @@ class Socket {
     void close();
 
     ssize_t recv(char *buffer,size_t n_bytes) const;
+    NonBlockingRecvResult nonBlockingRecv(char *buffer,size_t n_bytes) const;
     ssize_t send(const char *buffer,size_t n_bytes) const;
 
   private:

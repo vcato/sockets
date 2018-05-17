@@ -6,7 +6,11 @@ CXXFLAGS=-W -Wall -pedantic -std=c++14 -MD -MP -g
 
 LINK=$(CXX) -static-libgcc  -static-libstdc++
 
-all: run_unit_tests connection_speed_test messaging_test nodelay_test
+all: run_unit_tests \
+  connection_speed_test \
+  messaging_test \
+  nodelay_test \
+  nonblocking_test
 
 run_unit_tests: messagebuilder_test.pass objectset_test.pass
 
@@ -30,6 +34,9 @@ messaging_test: messagingtestmain.o \
 	$(LINK) -o $@ $^ $(LIBS)
 
 nodelay_test: nodelaytestmain.o socket.o internetaddress.o
+	$(LINK) -o $@ $^ $(LIBS)
+
+nonblocking_test: nonblockingtestmain.o socket.o internetaddress.o
 	$(LINK) -o $@ $^ $(LIBS)
 
 clean:
