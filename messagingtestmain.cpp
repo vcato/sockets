@@ -39,8 +39,13 @@ static void runServer()
       }
     };
 
+  MessagingServer::ConnectHandler connect_handler =
+    [](ClientHandle client_handle){
+      cerr << "client " << client_handle << " connected.\n";
+    };
+
   while (server.clientCount()!=0 || !quit_message_was_received) {
-    server.checkForMessages(message_handler);
+    server.checkForEvents(message_handler,connect_handler);
   }
 }
 

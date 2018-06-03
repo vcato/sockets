@@ -27,12 +27,13 @@ bool MessagingServer::aClientIsTryingToConnect() const
 }
 
 
-void MessagingServer::checkForNewClients()
+void MessagingServer::checkForNewClients(const ConnectHandler &connect_handler)
 {
   if (aClientIsTryingToConnect()) {
     ClientHandle client_handle = clients.allocate();
     Client &client = clients[client_handle];
     client.data_socket.acceptFrom(listen_socket);
+    connect_handler(client_handle);
   }
 }
 
@@ -68,9 +69,13 @@ void MessagingServer::removeDisconnectedClients()
 }
 
 
-void MessagingServer::checkForMessages(const MessageHandler& message_handler)
+void
+  MessagingServer::checkForEvents(
+    const MessageHandler& message_handler,
+    const ConnectHandler &connect_handler
+  )
 {
-  checkForNewClients();
+  checkForNewClients(connect_handler);
   checkForMessagesFromEachClient(message_handler);
   removeDisconnectedClients();
 }
