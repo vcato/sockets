@@ -6,13 +6,17 @@ CXXFLAGS=-W -Wall -pedantic -std=c++14 -MD -MP -g
 
 LINK=$(CXX) -static-libgcc  -static-libstdc++
 
-all: run_unit_tests \
-  connection_speed_test \
-  messaging_test \
-  nodelay_test \
-  nonblocking_test
+all: run_unit_tests build_manual_tests
 
-run_unit_tests: messagebuilder_test.pass objectset_test.pass
+run_unit_tests: \
+  messagebuilder_test.pass \
+  objectset_test.pass
+
+build_manual_tests: \
+  connectionspeed_manualtest \
+  messaging_manualtest \
+  nodelay_manualtest \
+  nonblocking_manualtest
 
 %.pass: %
 	./$*
@@ -24,19 +28,19 @@ messagebuilder_test: messagebuilder_test.o messagebuilder.o
 objectset_test: objectset_test.o
 	$(LINK) -o $@ $^ $(LIBS)
 
-connection_speed_test: \
+connectionspeed_manualtest: \
   connectionspeedtestmain.o socket.o internetaddress.o
 	$(LINK) -o $@ $^ $(LIBS)
 
-messaging_test: messagingtestmain.o \
+messaging_manualtest: messagingtestmain.o \
   socket.o internetaddress.o messagingserver.o messagebuilder.o \
   feedmessagebuilder.o messagingclient.o
 	$(LINK) -o $@ $^ $(LIBS)
 
-nodelay_test: nodelaytestmain.o socket.o internetaddress.o
+nodelay_manualtest: nodelaytestmain.o socket.o internetaddress.o
 	$(LINK) -o $@ $^ $(LIBS)
 
-nonblocking_test: nonblockingtestmain.o socket.o internetaddress.o
+nonblocking_manualtest: nonblockingtestmain.o socket.o internetaddress.o
 	$(LINK) -o $@ $^ $(LIBS)
 
 clean:

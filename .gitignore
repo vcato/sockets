@@ -2,9 +2,9 @@
 *.d
 *.pass
 
-connection_speed_test
+connectionspeed_manualtest
 messagebuilder_test
-messaging_test
+messaging_manualtest
 objectset_test
-nodelay_test
-nonblocking_test
+nodelay_manualtest
+nonblocking_manualtest
