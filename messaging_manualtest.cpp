@@ -10,9 +10,45 @@
 
 using std::cerr;
 using std::ostringstream;
+using std::string;
 
 
 static const int port = 4782;
+
+
+static void
+  sendFlood(
+    MessagingServer &server,
+    MessagingServer::ClientHandle client_handle,
+    int count
+  )
+{
+  for (int i=0; i!=count; ++i) {
+    if (i%1000==0) {
+      cerr << "Sending flood message " << i+1 << "\n";
+    }
+    server.sendMessageToClient("flood data",client_handle);
+  }
+
+  server.sendMessageToClient("end",client_handle);
+}
+
+
+
+static bool startsWith(const string &full_string,const string &prefix)
+{
+  return full_string.substr(0,prefix.length())==prefix;
+}
+
+
+static int floodCount(const string &message)
+{
+  std::istringstream stream(message);
+  string first_word, second_word;
+  stream >> first_word >> second_word;
+  assert(first_word=="flood");
+  return std::stoi(second_word);
+}
 
 
 static void runServer()
@@ -22,7 +58,7 @@ static void runServer()
   using ClientHandle = MessagingServer::ClientHandle;
 
   MessagingServer::MessageHandler message_handler =
-    [&](ClientHandle client_handle,const std::string &message){
+    [&](ClientHandle client_handle,const string &message){
       assert(message.find('\0')==message.npos);
       cerr << "message from client " << client_handle << ": " <<
         message << "\n";
@@ -33,6 +69,10 @@ static void runServer()
 
       if (message=="quit") {
         quit_message_was_received = true;
+      }
+      else if (startsWith(message,"flood")) {
+        int count = floodCount(message);
+        sendFlood(server,client_handle,count);
       }
       else {
         server.sendMessageToClient("ack",client_handle);
@@ -61,7 +101,7 @@ static void sleepForNSeconds(float n)
 }
 
 
-static std::string str(int i)
+static string str(int i)
 {
   ostringstream stream;
   stream << i;
@@ -76,7 +116,7 @@ static void runCountClient()
   client.connectToServer("localhost",port);
   int n_acks_received = 0;
 
-  auto message_handler = [&](const std::string &message){
+  auto message_handler = [&](const string &message){
     if (message=="ack") {
       ++n_acks_received;
     }
@@ -111,6 +151,50 @@ static void runQuitClient()
 }
 
 
+static string floodMessage(int n)
+{
+  ostringstream stream;
+  stream << "flood " << n;
+  return stream.str();
+}
+
+
+static void runFloodClient()
+{
+  int n_messages_per_flood = 1000000;
+
+  MessagingClient client;
+  client.connectToServer("localhost",port);
+  client.sendMessage(floodMessage(n_messages_per_flood));
+  sleepForNSeconds(5);
+  int n_data_messages_received = 0;
+  bool finished = false;
+
+  auto message_handler = [&](const string &message){
+    if (message=="flood data") {
+      ++n_data_messages_received;
+      if (n_data_messages_received%1000 == 1) {
+        cerr << "Got flood message " << n_data_messages_received << "\n";
+      }
+    }
+    else if (message=="end") {
+      finished = true;
+    }
+    else {
+      cerr << "Unknown message: " << message << "\n";
+      assert(false);
+    }
+  };
+
+  while (!finished) {
+    client.checkForMessages(message_handler);
+  }
+
+  assert(n_data_messages_received==n_messages_per_flood);
+  client.disconnectFromServer();
+}
+
+
 #ifndef _WIN32
 static void disablePipeSignal()
 {
@@ -130,11 +214,17 @@ int main(int argc,char** argv)
 #endif
 
   if (argc!=2) {
-    cerr << "Usage: " << argv[0] << " (server|count_client|quit_client)\n";
+    cerr << "Usage: " << argv[0] << " <operation>\n";
+    cerr << "\n";
+    cerr << "Operations:\n";
+    cerr << "  server\n";
+    cerr << "  count_client\n";
+    cerr << "  quit_client\n";
+    cerr << "  flood_client\n";
     return EXIT_FAILURE;
   }
 
-  std::string operation = argv[1];
+  string operation = argv[1];
 
   if (operation=="server") {
     runServer();
@@ -148,6 +238,11 @@ int main(int argc,char** argv)
 
   if (operation=="quit_client") {
     runQuitClient();
+    return EXIT_SUCCESS;
+  }
+
+  if (operation=="flood_client") {
+    runFloodClient();
     return EXIT_SUCCESS;
   }
 
