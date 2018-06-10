@@ -29,18 +29,18 @@ objectset_test: objectset_test.o
 	$(LINK) -o $@ $^ $(LIBS)
 
 connectionspeed_manualtest: \
-  connectionspeedtestmain.o socket.o internetaddress.o
+  connectionspeed_manualtest.o socket.o internetaddress.o
 	$(LINK) -o $@ $^ $(LIBS)
 
-messaging_manualtest: messagingtestmain.o \
+messaging_manualtest: messaging_manualtest.o \
   socket.o internetaddress.o messagingserver.o messagebuilder.o \
   feedmessagebuilder.o messagingclient.o
 	$(LINK) -o $@ $^ $(LIBS)
 
-nodelay_manualtest: nodelaytestmain.o socket.o internetaddress.o
+nodelay_manualtest: nodelay_manualtest.o socket.o internetaddress.o
 	$(LINK) -o $@ $^ $(LIBS)
 
-nonblocking_manualtest: nonblockingtestmain.o socket.o internetaddress.o
+nonblocking_manualtest: nonblocking_manualtest.o socket.o internetaddress.o
 	$(LINK) -o $@ $^ $(LIBS)
 
 clean:
