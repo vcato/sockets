@@ -243,6 +243,27 @@ bool Socket::canRecvWithoutBlocking() const
 }
 
 
+bool Socket::canSendWithoutBlocking() const
+{
+  assert(socket_handle!=invalid_socket_handle);
+
+  fd_set write_set;
+  FD_ZERO(&write_set);
+  FD_SET(socket_handle,&write_set);
+  int nfds = socket_handle + 1;
+  timeval timeout;
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 0;
+  select(nfds,/*readfds*/0,&write_set,/*exceptfds*/0,&timeout);
+
+  if (FD_ISSET(socket_handle,&write_set)) {
+    return true;
+  }
+
+  return false;
+}
+
+
 bool Socket::isValid() const
 {
   return socket_handle!=invalid_socket_handle;

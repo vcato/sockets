@@ -29,6 +29,7 @@ class Socket {
     void setNonBlocking(bool non_blocking);
 
     bool canRecvWithoutBlocking() const;
+    bool canSendWithoutBlocking() const;
 
     void acceptFrom(const Socket &listen_socket);
     void connectTo(const std::string &hostname,int port);

@@ -8,3 +8,4 @@ messaging_manualtest
 objectset_test
 nodelay_manualtest
 nonblocking_manualtest
+messagesender_test

@@ -1,6 +1,7 @@
 #include "objectset.hpp"
 #include "socket.hpp"
 #include "messagebuilder.hpp"
+#include "messagesender.hpp"
 
 
 class MessagingServer {
@@ -21,9 +22,13 @@ class MessagingServer {
     struct Client {
       Socket data_socket;
       MessageBuilder message_builder;
+      MessageSender message_sender;
 
       void checkForMessages(const MessageHandler &,ClientHandle);
       void sendMessage(const Message &message);
+
+      private:
+        MessageSender::SendChunkFunction _sendChunkFunction();
     };
 
     void checkForNewClients(const ConnectHandler &);

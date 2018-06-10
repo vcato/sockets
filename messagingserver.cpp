@@ -81,9 +81,29 @@ void
 }
 
 
+MessageSender::SendChunkFunction MessagingServer::Client::_sendChunkFunction()
+{
+  return
+    [this](const char *data,size_t data_size) -> size_t {
+      if (!data_socket.canSendWithoutBlocking()) {
+        return 0;
+      }
+
+      ssize_t send_result = data_socket.send(data,data_size);
+
+      if (send_result<0) {
+        return 0;
+      }
+
+      size_t n_bytes_sent = send_result;
+      return n_bytes_sent;
+    };
+}
+
+
 void MessagingServer::Client::sendMessage(const std::string &message)
 {
-  data_socket.send(message.c_str(),message.size()+1);
+  message_sender.addMessage(message,_sendChunkFunction());
 }
 
 
@@ -107,6 +127,8 @@ void
     };
 
   feedMessageBuilder(message_builder,data_socket,f);
+
+  message_sender.update(_sendChunkFunction());
 }
 
 
