@@ -12,6 +12,7 @@ using std::cerr;
 static void testSendingSimpleMessage()
 {
   MessageSender sender;
+  sender.setMaxChunkSize(1024);
   vector<string> chunks;
 
   std::function<size_t(const char *,size_t)> send_chunk_function =
