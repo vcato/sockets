@@ -99,6 +99,13 @@ static void runServer()
         int count = echoCount(message);
         echo_counts[client_handle] += count;
       }
+      else if (startsWith(message,"tellall")) {
+        server.forEachClient(
+          [&](ClientHandle client_handle){
+            server.sendMessageToClient("hi everyone",client_handle);
+          }
+        );
+      }
       else {
         server.sendMessageToClient("ack",client_handle);
       }
@@ -271,6 +278,31 @@ static void runRandomClient()
 }
 
 
+static void runTellAllClient()
+{
+  MessagingClient client;
+  client.connectToServer("localhost",port);
+  client.sendMessage("tellall");
+  client.disconnectFromServer();
+}
+
+
+static void runListenClient()
+{
+  MessagingClient client;
+  client.connectToServer("localhost",port);
+  bool got_a_message = false;
+
+  while (!got_a_message) {
+    client.checkForMessages([&](const string &message){
+      cerr << "Got message: " << message << "\n";
+      got_a_message = true;
+    });
+  }
+
+  client.disconnectFromServer();
+}
+
 #ifndef _WIN32
 static void disablePipeSignal()
 {
@@ -298,36 +330,24 @@ int main(int argc,char** argv)
     cerr << "  quit_client\n";
     cerr << "  flood_client\n";
     cerr << "  random_client\n";
+    cerr << "  tellall_client\n";
+    cerr << "  listen_client\n";
     return EXIT_FAILURE;
   }
 
   string operation = argv[1];
 
-  if (operation=="server") {
-    runServer();
-    return EXIT_SUCCESS;
+  if      (operation=="server")         runServer();
+  else if (operation=="count_client")   runCountClient();
+  else if (operation=="quit_client")    runQuitClient();
+  else if (operation=="flood_client")   runFloodClient();
+  else if (operation=="random_client")  runRandomClient();
+  else if (operation=="tellall_client") runTellAllClient();
+  else if (operation=="listen_client")  runListenClient();
+  else {
+    cerr << "Unknown operation: " << operation << "\n";
+    return EXIT_FAILURE;
   }
 
-  if (operation=="count_client") {
-    runCountClient();
-    return EXIT_SUCCESS;
-  }
-
-  if (operation=="quit_client") {
-    runQuitClient();
-    return EXIT_SUCCESS;
-  }
-
-  if (operation=="flood_client") {
-    runFloodClient();
-    return EXIT_SUCCESS;
-  }
-
-  if (operation=="random_client") {
-    runRandomClient();
-    return EXIT_SUCCESS;
-  }
-
-  cerr << "Unknown operation: " << operation << "\n";
-  return EXIT_FAILURE;
+  return EXIT_SUCCESS;
 }
