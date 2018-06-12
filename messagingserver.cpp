@@ -100,6 +100,8 @@ MessageSender::SendChunkFunction MessagingServer::Client::_sendChunkFunction()
         return 0;
       }
 
+      assert(data_socket.isValid());
+
       size_t n_bytes_sent = send_result;
       return n_bytes_sent;
     };
@@ -108,6 +110,7 @@ MessageSender::SendChunkFunction MessagingServer::Client::_sendChunkFunction()
 
 void MessagingServer::Client::sendMessage(const std::string &message)
 {
+  assert(data_socket.isValid());
   message_sender.addMessage(message,_sendChunkFunction());
 }
 
@@ -133,7 +136,11 @@ void
 
   feedMessageBuilder(message_builder,data_socket,f);
 
-  message_sender.update(_sendChunkFunction());
+  // feedMessageBuilder may have gotten EOF while reading and closed the
+  // connection.
+  if (data_socket.isValid()) {
+    message_sender.update(_sendChunkFunction());
+  }
 }
 
 
