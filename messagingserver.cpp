@@ -53,13 +53,17 @@ void
 }
 
 
-void MessagingServer::removeDisconnectedClients()
+void
+  MessagingServer::removeDisconnectedClients(
+    const DisconnectHandler &disconnect_handler
+  )
 {
   auto check_for_client_disconnect =
     [&](ClientHandle client_handle) {
       Client &client = clients[client_handle];
 
       if (!client.data_socket.isValid()) {
+        disconnect_handler(client_handle);
         // Client closed the connection
         clients.deallocate(client_handle);
       }
@@ -72,12 +76,13 @@ void MessagingServer::removeDisconnectedClients()
 void
   MessagingServer::checkForEvents(
     const MessageHandler& message_handler,
-    const ConnectHandler &connect_handler
+    const ConnectHandler &connect_handler,
+    const DisconnectHandler &disconnect_handler
   )
 {
   checkForNewClients(connect_handler);
   checkForMessagesFromEachClient(message_handler);
-  removeDisconnectedClients();
+  removeDisconnectedClients(disconnect_handler);
 }
 
 

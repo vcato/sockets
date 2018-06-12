@@ -111,13 +111,18 @@ static void runServer()
       }
     };
 
-  MessagingServer::ConnectHandler connect_handler =
+  auto connect_handler =
     [](ClientHandle client_handle){
       cerr << "client " << client_handle << " connected.\n";
     };
 
+  auto disconnect_handler =
+    [](ClientHandle client_handle){
+      cerr << "client " << client_handle << " disconnected.\n";
+    };
+
   while (server.clientCount()!=0 || !quit_message_was_received) {
-    server.checkForEvents(message_handler,connect_handler);
+    server.checkForEvents(message_handler,connect_handler,disconnect_handler);
   }
 }
 

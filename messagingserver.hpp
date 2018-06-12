@@ -10,11 +10,18 @@ class MessagingServer {
     using Message = std::string;
     using MessageHandler = std::function<void(ClientHandle,const Message &)>;
     using ConnectHandler = std::function<void(ClientHandle)>;
+    using DisconnectHandler = std::function<void(ClientHandle)>;
 
     MessagingServer(int port);
     ~MessagingServer();
 
-    void checkForEvents(const MessageHandler &,const ConnectHandler &);
+    void
+      checkForEvents(
+        const MessageHandler &,
+        const ConnectHandler &,
+        const DisconnectHandler &
+      );
+
     int clientCount() const;
     void sendMessageToClient(const Message &message,ClientHandle);
     void forEachClient(const std::function<void(ClientHandle)> &);
@@ -34,7 +41,7 @@ class MessagingServer {
 
     void checkForNewClients(const ConnectHandler &);
     void checkForMessagesFromEachClient(const MessageHandler &);
-    void removeDisconnectedClients();
+    void removeDisconnectedClients(const DisconnectHandler &);
     bool aClientIsTryingToConnect() const;
 
     Socket listen_socket;
