@@ -224,6 +224,11 @@ static void runFloodClient()
   };
 
   while (!finished) {
+    if (!client.isConnected()) {
+      cerr << "Server disconnected\n";
+      assert(false);
+      return;
+    }
     client.checkForMessages(message_handler);
   }
 

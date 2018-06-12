@@ -103,6 +103,7 @@ void Socket::bindTo(int port)
   server_address.setPort(port);
 
   create();
+
   try {
     bind(*this,server_address);
   }
@@ -142,6 +143,16 @@ void Socket::create()
 
   assert(socket_handle==invalid_socket_handle);
   socket_handle = new_file_descriptor;
+
+#if 0
+  int value = 1;
+  int setsockopt_result =
+    setsockopt(socket_handle,SOL_SOCKET,SO_REUSEADDR,&value,sizeof value);
+
+  if (setsockopt_result!=0) {
+    throw std::runtime_error("Unable to set socket option.");
+  }
+#endif
 }
 
 
