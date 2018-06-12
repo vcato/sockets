@@ -1,6 +1,9 @@
 #include "messagingclient.hpp"
 
+#include <iostream>
 #include "feedmessagebuilder.hpp"
+
+using std::cerr;
 
 
 void MessagingClient::connectToServer(const std::string &hostname,int port)

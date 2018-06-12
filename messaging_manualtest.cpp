@@ -1,6 +1,9 @@
 #include <iostream>
 #include <thread>
 #include <sstream>
+#include <random>
+#include <map>
+#include <deque>
 #include "messagingserver.hpp"
 #include "messagingclient.hpp"
 #ifndef _WIN32
@@ -11,6 +14,8 @@
 using std::cerr;
 using std::ostringstream;
 using std::string;
+using std::map;
+using RandomEngine = std::mt19937;
 
 
 static const int port = 4782;
@@ -51,28 +56,48 @@ static int floodCount(const string &message)
 }
 
 
+static int echoCount(const string &message)
+{
+  std::istringstream stream(message);
+  string first_word, second_word;
+  stream >> first_word >> second_word;
+  assert(first_word=="echo");
+  return std::stoi(second_word);
+}
+
+
 static void runServer()
 {
   MessagingServer server(port);
   bool quit_message_was_received = false;
   using ClientHandle = MessagingServer::ClientHandle;
+  map<ClientHandle,int> echo_counts;
 
   MessagingServer::MessageHandler message_handler =
     [&](ClientHandle client_handle,const string &message){
       assert(message.find('\0')==message.npos);
-      cerr << "message from client " << client_handle << ": " <<
-        message << "\n";
 
       for (int i=0, n=message.size(); i!=n; ++i) {
         assert(message[i]>0);
       }
 
-      if (message=="quit") {
+      if (echo_counts.count(client_handle)) {
+        server.sendMessageToClient(message,client_handle);
+        --echo_counts[client_handle];
+        if (echo_counts[client_handle]==0) {
+          echo_counts.erase(client_handle);
+        }
+      }
+      else if (message=="quit") {
         quit_message_was_received = true;
       }
       else if (startsWith(message,"flood")) {
         int count = floodCount(message);
         sendFlood(server,client_handle,count);
+      }
+      else if (startsWith(message,"echo")) {
+        int count = echoCount(message);
+        echo_counts[client_handle] += count;
       }
       else {
         server.sendMessageToClient("ack",client_handle);
@@ -195,6 +220,57 @@ static void runFloodClient()
 }
 
 
+static int randomInt(int low,int high,RandomEngine &engine)
+{
+  return std::uniform_int_distribution<int>(low,high)(engine);
+}
+
+
+static string randomMessage(RandomEngine &engine)
+{
+  int length = randomInt(0,10000,engine);
+  string message;
+
+  for (int i=0; i!=length; ++i) {
+    message.push_back('a'+randomInt(0,25,engine));
+  }
+
+  return message;
+}
+
+
+static void runRandomClient()
+{
+  MessagingClient client;
+  client.connectToServer("localhost",port);
+  int echo_count = 10000;
+  client.sendMessage("echo " + str(echo_count));
+  int n_messages_received = 0;
+  RandomEngine engine(/*seed*/1);
+  std::deque<string> expected_messages;
+
+  auto message_handler = [&](const string &message){
+    assert(message==expected_messages.front());
+    expected_messages.pop_front();
+
+    ++n_messages_received;
+  };
+
+  for (int i=0; i!=echo_count; ++i) {
+    string message = randomMessage(engine);
+    client.sendMessage(message);
+    expected_messages.push_back(message);
+    client.checkForMessages(message_handler);
+  }
+
+  while (n_messages_received!=echo_count) {
+    client.checkForMessages(message_handler);
+  }
+
+  client.disconnectFromServer();
+}
+
+
 #ifndef _WIN32
 static void disablePipeSignal()
 {
@@ -221,6 +297,7 @@ int main(int argc,char** argv)
     cerr << "  count_client\n";
     cerr << "  quit_client\n";
     cerr << "  flood_client\n";
+    cerr << "  random_client\n";
     return EXIT_FAILURE;
   }
 
@@ -243,6 +320,11 @@ int main(int argc,char** argv)
 
   if (operation=="flood_client") {
     runFloodClient();
+    return EXIT_SUCCESS;
+  }
+
+  if (operation=="random_client") {
+    runRandomClient();
     return EXIT_SUCCESS;
   }
 

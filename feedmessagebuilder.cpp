@@ -1,5 +1,9 @@
 #include "feedmessagebuilder.hpp"
 
+#include <iostream>
+
+using std::cerr;
+
 
 void
   feedMessageBuilder(

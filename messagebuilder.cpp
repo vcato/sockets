@@ -1,5 +1,9 @@
 #include "messagebuilder.hpp"
 
+#include <iostream>
+
+using std::cerr;
+
 
 void
   MessageBuilder::addChunk(
