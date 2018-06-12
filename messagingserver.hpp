@@ -17,6 +17,7 @@ class MessagingServer {
     void checkForEvents(const MessageHandler &,const ConnectHandler &);
     int clientCount() const;
     void sendMessageToClient(const Message &message,ClientHandle);
+    void forEachClient(const std::function<void(ClientHandle)> &);
 
   private:
     struct Client {

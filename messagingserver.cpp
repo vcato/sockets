@@ -140,3 +140,12 @@ void
 {
   clients[client_handle].sendMessage(message);
 }
+
+
+void
+  MessagingServer::forEachClient(
+    const std::function<void(ClientHandle)> &function
+  )
+{
+  clients.forEachHandle(function);
+}
