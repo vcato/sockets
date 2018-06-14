@@ -144,6 +144,12 @@ void
 }
 
 
+bool MessagingServer::clientHasUnsentMessages(ClientHandle client_handle) const
+{
+  return clients[client_handle].message_sender.messagesAreBuffered();
+}
+
+
 void
   MessagingServer::sendMessageToClient(
     const std::string &message,

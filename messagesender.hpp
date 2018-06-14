@@ -11,6 +11,7 @@ class MessageSender {
     void setMaxChunkSize(size_t arg) { _max_chunk_size = arg; }
     void addMessage(const std::string &,const SendChunkFunction &);
     void update(const SendChunkFunction &);
+    bool messagesAreBuffered() const { return _a_message_is_being_sent; }
 
   private:
     size_t _max_chunk_size = 1024;

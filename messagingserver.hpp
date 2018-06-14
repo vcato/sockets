@@ -24,6 +24,7 @@ class MessagingServer {
 
     int clientCount() const;
     void sendMessageToClient(const Message &message,ClientHandle);
+    bool clientHasUnsentMessages(ClientHandle client_handle) const;
     void forEachClient(const std::function<void(ClientHandle)> &);
 
   private:

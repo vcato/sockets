@@ -58,6 +58,13 @@ struct ObjectSet {
     return *object_ptrs[i];
   }
 
+  const T& operator[](ObjectHandle i) const
+  {
+    assert(i<object_ptrs.size());
+    assert(object_ptrs[i]);
+    return *object_ptrs[i];
+  }
+
   template <typename F>
   void forEachHandle(const F& f) const
   {
