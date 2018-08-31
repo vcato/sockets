@@ -50,12 +50,14 @@ static void runServer()
 
 static void runClient(const string &hostname)
 {
+  namespace chrono = std::chrono;
+  using clock = chrono::high_resolution_clock;
+
   Socket client_socket;
   client_socket.connectTo(hostname,1234);
   char buffer[1];
   bool first_read = true;
-  std::chrono::high_resolution_clock::time_point last_read_time;
-  using clock = std::chrono::high_resolution_clock;
+  clock::time_point last_read_time;
 
   for (;;) {
     ssize_t n_bytes_received =
@@ -69,8 +71,7 @@ static void runClient(const string &hostname)
 
     if (!first_read) {
       clock::duration d = current_read_time - last_read_time;
-      int n_ms =
-        std::chrono::duration_cast<std::chrono::milliseconds>(d).count();
+      int n_ms = chrono::duration_cast<chrono::milliseconds>(d).count();
       cerr << "n_ms: " << n_ms << "\n";
     }
     else {
