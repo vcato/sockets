@@ -56,7 +56,7 @@ static void runClient(const string &hostname)
 int main(int argc,char **argv)
 {
   if (argc==1) {
-    cerr << "Usage: nodelay_test (server|client <hostname>)\n";
+    cerr << "Usage: nonblocking_manualtest (server|client <hostname>)\n";
     return EXIT_FAILURE;
   }
 

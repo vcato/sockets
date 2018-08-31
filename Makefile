@@ -17,7 +17,8 @@ build_manual_tests: \
   connectionspeed_manualtest \
   messaging_manualtest \
   nodelay_manualtest \
-  nonblocking_manualtest
+  nonblocking_manualtest \
+  udp_manualtest
 
 %.pass: %
 	./$*
@@ -45,6 +46,9 @@ nodelay_manualtest: nodelay_manualtest.o socket.o internetaddress.o
 	$(LINK) -o $@ $^ $(LIBS)
 
 nonblocking_manualtest: nonblocking_manualtest.o socket.o internetaddress.o
+	$(LINK) -o $@ $^ $(LIBS)
+
+udp_manualtest: udp_manualtest.o internetaddress.o
 	$(LINK) -o $@ $^ $(LIBS)
 
 clean:

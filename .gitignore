@@ -3,9 +3,11 @@
 *.pass
 
 connectionspeed_manualtest
-messagebuilder_test
 messaging_manualtest
+udp_manualtest
+nonblocking_manualtest
+
+messagebuilder_test
 objectset_test
 nodelay_manualtest
-nonblocking_manualtest
 messagesender_test
