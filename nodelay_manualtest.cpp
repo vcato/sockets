@@ -60,8 +60,7 @@ static void runClient(const string &hostname)
   clock::time_point last_read_time;
 
   for (;;) {
-    ssize_t n_bytes_received =
-      client_socket.recv(buffer,sizeof buffer);
+    ssize_t n_bytes_received = client_socket.recv(buffer,sizeof buffer);
 
     if (n_bytes_received==0) {
       break;
