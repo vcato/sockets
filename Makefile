@@ -18,7 +18,8 @@ build_manual_tests: \
   messaging_manualtest \
   nodelay_manualtest \
   nonblocking_manualtest \
-  udp_manualtest
+  udp_manualtest \
+  bigmessageserver_manualtest
 
 %.pass: %
 	./$*
@@ -49,6 +50,11 @@ nonblocking_manualtest: nonblocking_manualtest.o socket.o internetaddress.o
 	$(LINK) -o $@ $^ $(LIBS)
 
 udp_manualtest: udp_manualtest.o internetaddress.o
+	$(LINK) -o $@ $^ $(LIBS)
+
+bigmessageserver_manualtest: bigmessageserver_manualtest.o messagingserver.o \
+  socket.o messagesender.o feedmessagebuilder.o internetaddress.o \
+  messagebuilder.o
 	$(LINK) -o $@ $^ $(LIBS)
 
 clean:

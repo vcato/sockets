@@ -4,6 +4,7 @@
 
 connectionspeed_manualtest
 messaging_manualtest
+bigmessageserver_manualtest
 udp_manualtest
 nonblocking_manualtest
 

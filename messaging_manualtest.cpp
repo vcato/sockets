@@ -15,6 +15,7 @@ using std::cerr;
 using std::ostringstream;
 using std::string;
 using std::map;
+using std::make_unique;
 using RandomEngine = std::mt19937;
 
 
@@ -56,7 +57,7 @@ static int floodCount(const string &message)
 }
 
 
-static int echoCount(const string &message)
+static int echoCountOf(const string &message)
 {
   std::istringstream stream(message);
   string first_word, second_word;
@@ -66,12 +67,48 @@ static int echoCount(const string &message)
 }
 
 
+static int sendSizeOf(const string &message)
+{
+  std::istringstream stream(message);
+  string first_word, second_word;
+  stream >> first_word >> second_word;
+  assert(first_word=="sendme");
+  return std::stoi(second_word);
+}
+
+
+static int randomInt(int low,int high,RandomEngine &engine)
+{
+  return std::uniform_int_distribution<int>(low,high)(engine);
+}
+
+
+static string randomMessage(RandomEngine &engine,int length)
+{
+  string message;
+
+  for (int i=0; i!=length; ++i) {
+    message.push_back('a'+randomInt(0,25,engine));
+  }
+
+  return message;
+}
+
+
+static string randomMessage(RandomEngine &engine)
+{
+  int length = randomInt(0,10000,engine);
+  return randomMessage(engine,length);
+}
+
+
 static void runServer()
 {
   MessagingServer server(port);
   bool quit_message_was_received = false;
   using ClientHandle = MessagingServer::ClientHandle;
   map<ClientHandle,int> echo_counts;
+  RandomEngine engine(/*seed*/1);
 
   MessagingServer::MessageHandler message_handler =
     [&](ClientHandle client_handle,const string &message){
@@ -96,7 +133,7 @@ static void runServer()
         sendFlood(server,client_handle,count);
       }
       else if (startsWith(message,"echo")) {
-        int count = echoCount(message);
+        int count = echoCountOf(message);
         echo_counts[client_handle] += count;
       }
       else if (startsWith(message,"tellall")) {
@@ -105,6 +142,11 @@ static void runServer()
             server.sendMessageToClient("hi everyone",client_handle);
           }
         );
+      }
+      else if (startsWith(message,"sendme ")) {
+        int size_to_send = sendSizeOf(message);
+        string message = randomMessage(engine,size_to_send);
+        server.sendMessageToClient(message,client_handle);
       }
       else {
         server.sendMessageToClient("ack",client_handle);
@@ -237,25 +279,6 @@ static void runFloodClient()
 }
 
 
-static int randomInt(int low,int high,RandomEngine &engine)
-{
-  return std::uniform_int_distribution<int>(low,high)(engine);
-}
-
-
-static string randomMessage(RandomEngine &engine)
-{
-  int length = randomInt(0,10000,engine);
-  string message;
-
-  for (int i=0; i!=length; ++i) {
-    message.push_back('a'+randomInt(0,25,engine));
-  }
-
-  return message;
-}
-
-
 static void runRandomClient()
 {
   MessagingClient client;
@@ -293,6 +316,32 @@ static void runTellAllClient()
   MessagingClient client;
   client.connectToServer("localhost",port);
   client.sendMessage("tellall");
+  client.disconnectFromServer();
+}
+
+
+static void runBigReceiveClient()
+{
+  MessagingClient client;
+  client.connectToServer("localhost",port);
+  client.sendMessage("sendme 1000000");
+  std::unique_ptr<string> received_message_ptr;
+
+  auto message_handler =
+    [&](const string &message){
+      received_message_ptr = make_unique<string>(message);
+    };
+
+  for (;;) {
+    client.checkForMessages(message_handler);
+
+    if (received_message_ptr) {
+      break;
+    }
+  }
+
+  assert(received_message_ptr->size() == 1000000);
+
   client.disconnectFromServer();
 }
 
@@ -347,13 +396,14 @@ int main(int argc,char** argv)
 
   string operation = argv[1];
 
-  if      (operation=="server")         runServer();
-  else if (operation=="count_client")   runCountClient();
-  else if (operation=="quit_client")    runQuitClient();
-  else if (operation=="flood_client")   runFloodClient();
-  else if (operation=="random_client")  runRandomClient();
-  else if (operation=="tellall_client") runTellAllClient();
-  else if (operation=="listen_client")  runListenClient();
+  if      (operation=="server")            runServer();
+  else if (operation=="count_client")      runCountClient();
+  else if (operation=="quit_client")       runQuitClient();
+  else if (operation=="flood_client")      runFloodClient();
+  else if (operation=="random_client")     runRandomClient();
+  else if (operation=="tellall_client")    runTellAllClient();
+  else if (operation=="bigreceive_client") runBigReceiveClient();
+  else if (operation=="listen_client")     runListenClient();
   else {
     cerr << "Unknown operation: " << operation << "\n";
     return EXIT_FAILURE;
