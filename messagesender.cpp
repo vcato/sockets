@@ -5,6 +5,13 @@
 using std::string;
 
 
+static size_t totalSize(const string &message)
+{
+  // We send a null terminator, so we add 1
+  return message.size() + 1;
+}
+
+
 const string &MessageSender::_remainingMessage() const
 {
   assert(_a_message_is_being_sent);
@@ -60,10 +67,10 @@ size_t
   )
 {
   const char *chunk = message.c_str();
-  size_t remaining_size = message.length() + 1;
-    // message.c_str() gives us a null-terminated string.  Since we want
-    // to send the null terminator, we'll just pretend like the message is
-    // one byte longer.
+    // c_str() adds a null terminator, so we don't have to do that
+    // explicitly.
+
+  size_t remaining_size = totalSize(message);
 
   for (;;) {
     size_t chunk_size = remaining_size;
@@ -101,7 +108,7 @@ void MessageSender::_storeRemaining(const string &message,size_t remaining_size)
     _a_message_is_being_sent = false;
   }
   else {
-    size_t n_bytes_sent = message.size() + 1 - remaining_size;
+    size_t n_bytes_sent = totalSize(message) - remaining_size;
     _remaining_message =
       string(message.data() + n_bytes_sent,remaining_size - 1);
     _a_message_is_being_sent = true;
