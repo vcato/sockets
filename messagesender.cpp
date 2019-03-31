@@ -61,6 +61,9 @@ size_t
 {
   const char *chunk = message.c_str();
   size_t remaining_size = message.length() + 1;
+    // message.c_str() gives us a null-terminated string.  Since we want
+    // to send the null terminator, we'll just pretend like the message is
+    // one byte longer.
 
   for (;;) {
     size_t chunk_size = remaining_size;
